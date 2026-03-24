@@ -1,1 +1,1051 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ImageShare Pro - GitHub Upload</title>
+    <style>
+         * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            padding: 0.8rem 1.5rem;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            font-size: 1rem;
+        }
+
+        .nav-link.login-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+        }
+
+        .nav-link.logout-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+        }
+
+        .nav-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .login-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-modal.active {
+            display: flex;
+        }
+
+        .login-box {
+            background: white;
+            border-radius: 20px;
+            padding: 2.5rem;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .login-box h2 {
+            color: #333;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .login-box input {
+            width: 100%;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+        }
+
+        .login-box button {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .login-box .error-message {
+            color: #dc3545;
+            text-align: center;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .login-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+        }
+
+        .upload-area {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .upload-header h2 {
+            color: #333;
+            margin-bottom: 1.5rem;
+        }
+
+        .upload-box {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 3rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8faff;
+        }
+
+        .upload-box:hover {
+            background: #f0f3ff;
+            transform: scale(1.02);
+        }
+
+        .upload-box i {
+            font-size: 4rem;
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+
+        .caption-form {
+            margin-top: 1.5rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .caption-form input {
+            flex: 1;
+            padding: 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+        }
+
+        .caption-form button {
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .caption-form button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #e0e0e0;
+            border-radius: 2px;
+            margin-top: 1rem;
+            overflow: hidden;
+            display: none;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .image-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .image-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .image-card.admin .delete-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #ff4757;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .image-container {
+            height: 250px;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .image-card:hover .image-container img {
+            transform: scale(1.1);
+        }
+
+        .image-info {
+            padding: 1.2rem;
+        }
+
+        .image-info h3 {
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .image-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #666;
+            margin-top: 0.5rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid #eee;
+        }
+
+        .download-btn {
+            background: none;
+            border: none;
+            color: #667eea;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        .badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(102, 126, 234, 0.9);
+            color: white;
+            padding: 0.3rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            z-index: 10;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            position: relative;
+            max-width: 90vw;
+            max-height: 90vh;
+        }
+
+        .modal-content img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .modal-caption {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.8));
+            color: white;
+            padding: 2rem 1rem 1rem;
+            text-align: center;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 3rem;
+            cursor: pointer;
+        }
+
+        .search-section {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .search-box {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 1rem 1rem 1rem 3rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 30px;
+            font-size: 1rem;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+        }
+
+        .filter-tags {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            background: #f0f0f0;
+            color: #666;
+            cursor: pointer;
+        }
+
+        .tag.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .admin-only {
+            display: none;
+        }
+
+        body.admin-logged .admin-only {
+            display: block;
+        }
+
+        body.admin-logged .login-btn {
+            display: none;
+        }
+
+        body:not(.admin-logged) .logout-btn {
+            display: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: white;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #333;
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            z-index: 2000;
+            animation: slideIn 0.3s ease;
+        }
+
+        .toast.success { background: #28a745; }
+        .toast.error { background: #dc3545; }
+        .toast.info { background: #17a2b8; }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .nav-container {
+                flex-direction: column;
+            }
+            .gallery {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">📸 ImageShare Pro - GitHub Direct</div>
+            <div class="nav-links">
+                <button onclick="showAdminLogin()" class="nav-link login-btn" id="loginBtn">🔐 Login Admin</button>
+                <button onclick="logoutAdmin()" class="nav-link logout-btn" id="logoutBtn">🚪 Sair</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="login-modal" id="loginModal">
+        <span class="login-close" onclick="closeLoginModal()">&times;</span>
+        <div class="login-box">
+            <h2>🔐 Login Admin</h2>
+            <input type="password" id="adminPassword" placeholder="Digite a senha de admin">
+            <button onclick="checkAdminLogin()">Entrar</button>
+            <div class="error-message" id="loginError">Senha incorreta!</div>
+            <p style="text-align: center; margin-top: 1rem; color: #666;">Senha: admin123</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="admin-only upload-area" id="uploadSection">
+            <div class="upload-header">
+                <h2><i class="fas fa-cloud-upload-alt"></i> Upload para GitHub</h2>
+            </div>
+            <div class="upload-box" id="dropArea">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <p>Arraste sua imagem aqui ou clique para selecionar</p>
+                <small>Formatos: JPG, PNG, GIF (máx 5MB)</small>
+                <input type="file" id="fileInput" accept="image/*" style="display: none;">
+            </div>
+            <div class="caption-form">
+                <input type="text" id="caption" placeholder="Digite uma legenda para esta imagem...">
+                <button onclick="uploadImage()" id="uploadBtn">
+                    <i class="fas fa-upload"></i> Enviar para GitHub
+                </button>
+            </div>
+            <div class="progress-bar" id="progressBar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+
+        <div class="search-section">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Buscar imagens por legenda...">
+            </div>
+            <div class="filter-tags">
+                <span class="tag active" onclick="filterBy('all', this)">Todas</span>
+                <span class="tag" onclick="filterBy('recent', this)">Mais Recentes</span>
+                <span class="tag" onclick="filterBy('popular', this)">Mais Baixadas</span>
+            </div>
+        </div>
+
+        <div class="gallery" id="gallery"></div>
+    </div>
+
+    <div class="modal" id="imageModal">
+        <span class="close-modal" onclick="closeModal()">&times;</span>
+        <div class="modal-content">
+            <img id="modalImage" src="">
+            <div class="modal-caption" id="modalCaption"></div>
+        </div>
+    </div>
+    <script>
+
+        // ⚠️ SUBSTITUA COM SEUS DADOS ⚠️
+        const GITHUB_TOKEN = "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"; // Cole o token que você gerou
+        const GITHUB_USERNAME = "bussajonatham-estrela";
+        const GITHUB_REPO = "ImageShare-Pro";
+        const GITHUB_BRANCH = "main";
+        
+        // URLs
+        const API_URL = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents`;
+        const RAW_URL = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${GITHUB_REPO}/${GITHUB_BRANCH}`;
+        
+        // Configuração do site
+        const ADMIN_PASSWORD = "admin123";
+        
+        // Estado
+        let images = [];
+        let isAdminLoggedIn = false;
+        let currentFilter = 'all';
+        let searchTerm = '';
+        
+        const body = document.body;
+        const loginModal = document.getElementById('loginModal');
+        const galleryEl = document.getElementById('gallery');
+        
+        // ==================== UTILITÁRIOS ====================
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+        
+        // ==================== AUTENTICAÇÃO ====================
+        function showAdminLogin() {
+            loginModal.classList.add('active');
+            document.getElementById('adminPassword').value = '';
+            document.getElementById('loginError').classList.remove('show');
+        }
+        
+        function closeLoginModal() {
+            loginModal.classList.remove('active');
+        }
+        
+        function checkAdminLogin() {
+            const password = document.getElementById('adminPassword').value;
+            if (password === ADMIN_PASSWORD) {
+                isAdminLoggedIn = true;
+                body.classList.add('admin-logged');
+                sessionStorage.setItem('adminLoggedIn', 'true');
+                closeLoginModal();
+                showToast('✅ Login realizado com sucesso!', 'success');
+                loadImages();
+            } else {
+                document.getElementById('loginError').classList.add('show');
+            }
+        }
+        
+        function logoutAdmin() {
+            isAdminLoggedIn = false;
+            body.classList.remove('admin-logged');
+            sessionStorage.removeItem('adminLoggedIn');
+            showToast('👋 Logout realizado', 'info');
+            loadImages();
+        }
+        
+        // ==================== CARREGAR IMAGENS DO GITHUB ====================
+        async function loadImages() {
+            galleryEl.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Carregando imagens...</div>';
+            
+            try {
+                // Tentar carregar o data.json
+                const response = await fetch(`${RAW_URL}/data.json?t=${Date.now()}`);
+                if (response.ok) {
+                    images = await response.json();
+                } else {
+                    images = [];
+                }
+                displayImages();
+            } catch (error) {
+                console.error('Erro:', error);
+                images = [];
+                displayImages();
+            }
+        }
+        
+        // ==================== UPLOAD PARA GITHUB ====================
+        async function uploadImageToGitHub(file, fileName, caption) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    try {
+                        // Converter para base64 (remover o prefixo)
+                        const base64 = e.target.result.split(',')[1];
+                        
+                        // Upload da imagem
+                        const imagePath = `images/${fileName}`;
+                        const imageResponse = await fetch(`${API_URL}/${imagePath}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Authorization': `token ${GITHUB_TOKEN}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                message: `Upload imagem: ${fileName}`,
+                                content: base64,
+                                branch: GITHUB_BRANCH
+                            })
+                        });
+                        
+                        if (!imageResponse.ok) {
+                            throw new Error('Erro no upload da imagem');
+                        }
+                        
+                        const imageData = await imageResponse.json();
+                        const imageUrl = `${RAW_URL}/images/${fileName}`;
+                        
+                        resolve(imageUrl);
+                    } catch (error) {
+                        reject(error);
+                    }
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+        
+        async function updateDataJSON(newImage) {
+            try {
+                // Buscar data.json atual
+                let currentData = [];
+                const getResponse = await fetch(`${API_URL}/data.json`, {
+                    headers: { 'Authorization': `token ${GITHUB_TOKEN}` }
+                });
+                
+                let sha = null;
+                if (getResponse.ok) {
+                    const fileData = await getResponse.json();
+                    currentData = JSON.parse(atob(fileData.content));
+                    sha = fileData.sha;
+                }
+                
+                // Adicionar nova imagem
+                currentData.unshift(newImage);
+                const updatedContent = btoa(unescape(encodeURIComponent(JSON.stringify(currentData, null, 2))));
+                
+                // Atualizar data.json
+                const updateResponse = await fetch(`${API_URL}/data.json`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${GITHUB_TOKEN}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: `Adicionar imagem: ${newImage.caption}`,
+                        content: updatedContent,
+                        sha: sha,
+                        branch: GITHUB_BRANCH
+                    })
+                });
+                
+                if (!updateResponse.ok) {
+                    throw new Error('Erro ao atualizar data.json');
+                }
+                
+                return true;
+            } catch (error) {
+                console.error('Erro:', error);
+                throw error;
+            }
+        }
+        
+        async function uploadImage() {
+            if (!isAdminLoggedIn) {
+                alert('Acesso negado! Faça login como admin.');
+                return;
+            }
+            
+            const fileInput = document.getElementById('fileInput');
+            const caption = document.getElementById('caption');
+            const uploadBtn = document.getElementById('uploadBtn');
+            const progressBar = document.getElementById('progressBar');
+            const progressFill = document.getElementById('progressFill');
+            
+            if (!fileInput.files.length) {
+                alert('Selecione uma imagem.');
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            
+            if (!file.type.startsWith('image/')) {
+                alert('Selecione apenas imagens (JPG, PNG, GIF).');
+                return;
+            }
+            
+            if (file.size > 5 * 1024 * 1024) {
+                alert('A imagem deve ter no máximo 5MB.');
+                return;
+            }
+            
+            // Gerar nome único
+            const timestamp = Date.now();
+            const fileName = `${timestamp}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+            const captionText = caption.value.trim() || 'Sem legenda';
+            
+            // Mostrar progresso
+            uploadBtn.disabled = true;
+            uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+            progressBar.style.display = 'block';
+            progressFill.style.width = '30%';
+            
+            try {
+                // Upload da imagem
+                progressFill.style.width = '50%';
+                const imageUrl = await uploadImageToGitHub(file, fileName, captionText);
+                
+                // Criar objeto da imagem
+                const newImage = {
+                    id: timestamp,
+                    src: imageUrl,
+                    caption: captionText,
+                    date: new Date().toLocaleDateString('pt-BR'),
+                    downloads: 0,
+                    timestamp: timestamp,
+                    fileName: fileName
+                };
+                
+                // Atualizar data.json
+                progressFill.style.width = '80%';
+                await updateDataJSON(newImage);
+                
+                // Recarregar imagens
+                progressFill.style.width = '100%';
+                await loadImages();
+                
+                // Limpar formulário
+                fileInput.value = '';
+                caption.value = '';
+                
+                showToast('✅ Imagem publicada com sucesso no GitHub!', 'success');
+                
+            } catch (error) {
+                console.error('Erro:', error);
+                showToast('❌ Erro ao publicar imagem: ' + error.message, 'error');
+            } finally {
+                uploadBtn.disabled = false;
+                uploadBtn.innerHTML = '<i class="fas fa-upload"></i> Enviar para GitHub';
+                setTimeout(() => {
+                    progressBar.style.display = 'none';
+                    progressFill.style.width = '0%';
+                }, 1000);
+            }
+        }
+        
+        // ==================== DELETAR IMAGEM ====================
+        async function deleteImage(imageId) {
+            if (!isAdminLoggedIn) return;
+            
+            const image = images.find(img => img.id == imageId);
+            if (!image) return;
+            
+            if (!confirm(`Tem certeza que deseja excluir "${image.caption}"?`)) return;
+            
+            try {
+                // Buscar data.json atual
+                const getResponse = await fetch(`${API_URL}/data.json`, {
+                    headers: { 'Authorization': `token ${GITHUB_TOKEN}` }
+                });
+                
+                if (!getResponse.ok) throw new Error('Erro ao carregar dados');
+                
+                const fileData = await getResponse.json();
+                let currentData = JSON.parse(atob(fileData.content));
+                
+                // Remover imagem
+                currentData = currentData.filter(img => img.id != imageId);
+                
+                // Se a imagem existe no storage, deletar
+                if (image.fileName) {
+                    try {
+                        await fetch(`${API_URL}/images/${image.fileName}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Authorization': `token ${GITHUB_TOKEN}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                message: `Deletar imagem: ${image.fileName}`,
+                                branch: GITHUB_BRANCH
+                            })
+                        });
+                    } catch (e) {
+                        console.log('Arquivo não encontrado no storage');
+                    }
+                }
+                
+                // Atualizar data.json
+                const updatedContent = btoa(unescape(encodeURIComponent(JSON.stringify(currentData, null, 2))));
+                await fetch(`${API_URL}/data.json`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${GITHUB_TOKEN}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: `Deletar imagem: ${image.caption}`,
+                        content: updatedContent,
+                        sha: fileData.sha,
+                        branch: GITHUB_BRANCH
+                    })
+                });
+                
+                showToast('✅ Imagem excluída com sucesso!', 'success');
+                await loadImages();
+                
+            } catch (error) {
+                console.error('Erro:', error);
+                showToast('❌ Erro ao excluir imagem', 'error');
+            }
+        }
+        
+        // ==================== DOWNLOAD ====================
+        async function downloadImage(imageId) {
+            const image = images.find(img => img.id == imageId);
+            if (!image) return;
+            
+            try {
+                // Incrementar contador de downloads
+                const getResponse = await fetch(`${API_URL}/data.json`, {
+                    headers: { 'Authorization': `token ${GITHUB_TOKEN}` }
+                });
+                
+                if (getResponse.ok) {
+                    const fileData = await getResponse.json();
+                    let currentData = JSON.parse(atob(fileData.content));
+                    const imgIndex = currentData.findIndex(img => img.id == imageId);
+                    
+                    if (imgIndex !== -1) {
+                        currentData[imgIndex].downloads = (currentData[imgIndex].downloads || 0) + 1;
+                        const updatedContent = btoa(unescape(encodeURIComponent(JSON.stringify(currentData, null, 2))));
+                        
+                        await fetch(`${API_URL}/data.json`, {
+                            method: 'PUT',
+                            headers: {
+                                'Authorization': `token ${GITHUB_TOKEN}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                message: `Download: ${image.caption}`,
+                                content: updatedContent,
+                                sha: fileData.sha,
+                                branch: GITHUB_BRANCH
+                            })
+                        });
+                    }
+                }
+                
+                // Baixar imagem
+                const link = document.createElement('a');
+                link.href = image.src;
+                link.download = `image-${imageId}.jpg`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                await loadImages();
+                
+            } catch (error) {
+                console.error('Erro:', error);
+                // Download mesmo sem atualizar contador
+                const link = document.createElement('a');
+                link.href = image.src;
+                link.download = `image-${imageId}.jpg`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+        
+        // ==================== EXIBIR IMAGENS ====================
+        function getFilteredImages() {
+            let filtered = [...images];
+            
+            if (searchTerm.trim()) {
+                filtered = filtered.filter(img => 
+                    img.caption.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+            }
+            
+            if (currentFilter === 'recent') {
+                filtered.sort((a, b) => b.timestamp - a.timestamp);
+            } else if (currentFilter === 'popular') {
+                filtered.sort((a, b) => b.downloads - a.downloads);
+            }
+            
+            return filtered;
+        }
+        
+        function displayImages() {
+            const filtered = getFilteredImages();
+            
+            if (filtered.length === 0) {
+                galleryEl.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 4rem; background: white; border-radius: 15px;">
+                        <i class="fas fa-images" style="font-size: 4rem; color: #ccc;"></i>
+                        <h3 style="margin-top: 1rem;">Nenhuma imagem encontrada</h3>
+                        ${isAdminLoggedIn ? '<p style="color: #999;">Faça upload de uma nova imagem acima.</p>' : '<p style="color: #999;">Aguardando imagens do administrador.</p>'}
+                    </div>
+                `;
+                return;
+            }
+            
+            galleryEl.innerHTML = filtered.map(img => `
+                <div class="image-card ${isAdminLoggedIn ? 'admin' : ''}">
+                    ${isAdminLoggedIn ? 
+                        `<button class="delete-btn" onclick="deleteImage(${img.id})"><i class="fas fa-trash"></i></button>` : 
+                        `<div class="badge"><i class="fas fa-download"></i> ${img.downloads || 0}</div>`
+                    }
+                    <div class="image-container" onclick="openModal('${img.src.replace(/'/g, "\\'")}', '${img.caption.replace(/'/g, "\\'")}')">
+                        <img src="${img.src}" alt="${img.caption}" loading="lazy">
+                    </div>
+                    <div class="image-info">
+                        <h3>${img.caption}</h3>
+                        <div class="image-meta">
+                            <span><i class="far fa-calendar"></i> ${img.date}</span>
+                            <span><i class="fas fa-download"></i> ${img.downloads || 0}</span>
+                            <button class="download-btn" onclick="downloadImage(${img.id})">
+                                <i class="fas fa-download"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function openModal(src, caption) {
+            document.getElementById('modalImage').src = src;
+            document.getElementById('modalCaption').textContent = caption;
+            document.getElementById('imageModal').classList.add('active');
+        }
+        
+        function closeModal() {
+            document.getElementById('imageModal').classList.remove('active');
+        }
+        
+        function filterBy(type, element) {
+            currentFilter = type;
+            document.querySelectorAll('.tag').forEach(tag => tag.classList.remove('active'));
+            element.classList.add('active');
+            displayImages();
+        }
+        
+        // ==================== INICIALIZAÇÃO ====================
+        document.addEventListener('DOMContentLoaded', () => {
+            const session = sessionStorage.getItem('adminLoggedIn');
+            if (session === 'true') {
+                isAdminLoggedIn = true;
+                body.classList.add('admin-logged');
+            }
+            
+            loadImages();
+            
+            // Upload area
+            const dropArea = document.getElementById('dropArea');
+            const fileInput = document.getElementById('fileInput');
+            
+            if (dropArea) {
+                dropArea.addEventListener('click', () => fileInput.click());
+                dropArea.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    dropArea.style.background = '#e6ecff';
+                });
+                dropArea.addEventListener('dragleave', () => {
+                    dropArea.style.background = '#f8faff';
+                });
+                dropArea.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    dropArea.style.background = '#f8faff';
+                    if (e.dataTransfer.files.length && isAdminLoggedIn) {
+                        fileInput.files = e.dataTransfer.files;
+                    }
+                });
+            }
+            
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                searchTerm = e.target.value;
+                displayImages();
+            });
+            
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeModal();
+                    closeLoginModal();
+                }
+            });
+            
+            document.getElementById('imageModal').addEventListener('click', closeModal);
+            loginModal.addEventListener('click', (e) => {
+                if (e.target === loginModal) closeLoginModal();
+            });
+        });
+
+    </script>
+</body>
+</html>
